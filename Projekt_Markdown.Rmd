@@ -32,7 +32,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### Run library
-```{r}
+```{r include=FALSE}
 library(tidyverse)
 library(shiny)
 library(shinythemes)
@@ -57,7 +57,7 @@ Sys.setenv(OWM_API_KEY = "9b199d86f5f274e32dc5ad67d98045cc") # if not set global
 - with the time of running.
 
 ```{r}
-help("get_current")
+
 (current_weather <- get_current("Kiel", units = "metric") %>%
   owmr_as_tibble()) %>% names()
 
@@ -228,7 +228,7 @@ server <- function(input, output) {
 ```{r}
 
 shinyApp(
-  ui <- fluidPage(
+ ui <- fluidPage(
 
   # App title ----
   titlePanel("Shiny Text"),
@@ -242,7 +242,7 @@ shinyApp(
       # Input: Selector for choosing dataset ----
       selectInput(inputId = "dataset",
                   label = "Choose a dataset:",
-                  choices = c("rock", "pressure", "cars")),
+                  choices = c("forecast")),
 
       # Input: Numeric entry for number of obs to view ----
       numericInput(inputId = "obs",
@@ -269,9 +269,7 @@ server <- function(input, output) {
   # Return the requested dataset ----
   datasetInput <- reactive({
     switch(input$dataset,
-           "rock" = rock,
-           "pressure" = pressure,
-           "cars" = cars)
+           "forecast" = forecast)
   })
 
   # Generate a summary of the dataset ----
@@ -284,8 +282,83 @@ server <- function(input, output) {
   output$view <- renderTable({
     head(datasetInput(), n = input$obs)
   })
+
 }
 )
 
 ```
+
+Or with some plots of our data.
+
+```{r}
+
+shinyApp(
+  ui <- fluidPage(
+    #App title
+    titlePanel("Test App"),
+    
+    #Sidebar Layout
+    sidebarLayout(
+      sidebarPanel(
+        selectInput(inputId = "variable",
+                    label = "Was möchten sie sehen?",
+                    choices = colnames(forecast) 
+                    )
+      ),
+      mainPanel(
+        plotOutput(outputId = "dia"),
+        tableOutput(outputId = "table")
+      )
+        
+      )
+    ),
+  server <- function(input, output){
+    
+    variableInput <- reactive({
+      switch(input$variable,
+             "temp" = forecast$temp,
+             "pressure" = forecast$pressure,
+             "humidity" = forecast$humidity,
+             "temp_min" = forecast$temp_min,
+             "temp_max" = forecast$temp_max,
+             "weather_id" = forecast$weather_id,
+             "weather_main" = forecast$weather_main,
+             "weather_description" = forecast$weather_description,
+             "weather_icon" = forecast$weather_icon,
+             "wind_speed" = forecast$wind_speed,
+             "wind_deg" = forecast$wind_deg,
+             "clouds_all" = forecast$clouds_all,
+             "dt" = forecast$dt,
+             "sea_level" = forecast$sea_level,
+             "grnd_level" = forecast$grnd_level,
+             "temp_kf" = forecast$temp_kf,
+             "rain_3h" = forecast$rain_3h,
+             "sys_pod" = forecast$sys_pod,
+             "dt_txt" = forecast$dt_txt
+             )
+    })
+    tableInput <- reactive({
+      df <- forecast %>%
+        group_by(weather_main)
+        
+        
+    })
+    output$dia <- renderPlot({
+      ggplot(forecast, aes(x = dt_txt, y = variableInput()))+
+        geom_point() 
+    })
+    output$table <- renderTable({
+      forecast
+    })
+  }
+  
+)
+
+
+
+```
  
+```{r}
+
+```
+
