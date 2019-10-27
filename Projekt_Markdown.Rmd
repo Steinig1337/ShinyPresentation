@@ -1,0 +1,276 @@
+---
+title: "Projekt"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Presentation of Shiny
+## Shiny generals
+
+- Shiny is an R package that makes it easy to build interactive web applications (apps) straight from R.
+- Shiny applications will run on a server. 
+- They will hosted right on your computer over an integrated service. 
+- With this apps you can create interactive web applications for data visialization.
+
+## requirements
+- tidyverse
+- shiny
+- We need a package called owmr for getting our data from the openweather API.
+- Account for API (in this case: https://openweathermap.org/api)
+- Set up your API
+
+### Install OWMR
+
+```{r}
+#install.packages("owmr")
+```
+
+### Run library
+```{r}
+library(tidyverse)
+library(shiny)
+library(owmr)
+```
+
+### Set up your api key
+ There are two ways to setup your API.
+ 
+```{r}
+#1.  owmr_settings("9b199d86f5f274e32dc5ad67d98045cc")
+
+#2. store it in an environment variable called OWM_API_KEY (recommended)
+
+Sys.setenv(OWM_API_KEY = "9b199d86f5f274e32dc5ad67d98045cc") # if not set globally
+```
+
+### Download some data
+
+- With the get_current function we will get a tibble with current weather data 
+- from the city 
+- with the time of running.
+
+```{r}
+help("get_current")
+(current_weather <- get_current("Kiel", units = "metric") %>%
+  owmr_as_tibble()) %>% names()
+
+```
+
+- With the get_forecast function we will get a forecast
+
+
+```{r}
+
+forecast <- get_forecast("Kiel", units = "metric") %>%
+  owmr_as_tibble()
+
+```
+
+
+## Analyse the data
+
+### View the data
+
+ 
+```{r echo=TRUE}
+View(current_weather)
+View(forecast)
+
+class(forecast)
+str(forecast)
+
+```
+ Because we have only one row in the current_weather tibble we choose the forecast tibble.
+ 
+### How many hours we have?
+ 
+ We should view the data with some funktions to see how many hours and how many rows and attributes of forecast we got.
+ 
+ - 40 rows of data. So we got 39*3h= 117h = 4.875 d of time in 40 rows.
+ - 19 variables
+ 
+ 
+### Lets plot some graphics
+
+ 
+```{r}
+ggplot(forecast) +
+  geom_point(aes(dt_txt, temp))
+```
+ 
+ We should try a shiny app.
+ 
+## Do some Shiny stuff
+
+### Therefore we need a app template
+
+If you type in shinyApp as Snippet than you will get this shiny app template. Use this template in a r.script.
+
+```{r, include=FALSE}
+#ui <- fluidPage()
+
+#server <- function(input, output, session) {}
+
+#shinyApp(ui, server)
+```
+
+Because we are here in a markdown file we have to use some other stuff called inline applications
+
+```{r, echo=FALSE}
+#shinyApp(  
+#  ui = fluidPage(  ),
+
+#  server = function(input, output) {  },
+
+#  options = list(height = 500)
+#)
+
+```
+
+### Now we have to fill the app with data.
+
+```{r}
+
+shinyApp(
+  ui = fluidPage(
+        sliderInput(inputId = "num",
+                label = "Choose a number",
+                value = 50, min = 1, max = 100),
+        plotOutput("hist")
+    
+   ),
+  
+    
+
+  server = function(input, output) {
+    output$hist <- renderPlot({
+      title <- "Temperaturverlauf"
+      hist(rnorm(input$num), main = title)
+    })
+  },
+
+  options = list(height = 500)
+)
+
+```
+
+Or something like that.
+
+
+```{r}
+
+shinyApp(
+  ui <- fluidPage(
+
+  # App title ----
+  titlePanel("First app!"),
+
+  # Sidebar layout with input and output definitions ----
+  sidebarLayout(
+
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+
+      # Input: Slider for the number of bins ----
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30)
+
+    ),
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      # Output: Histogram ----
+      plotOutput(outputId = "distPlot")
+
+    )
+  )
+),
+server <- function(input, output) {
+
+  # Histogram of the Old Faithful Geyser Data ----
+  # with requested number of bins
+  # This expression that generates a histogram is wrapped in a call
+  # to renderPlot to indicate that:
+  #
+  # 1. It is "reactive" and therefore should be automatically
+  #    re-executed when inputs (input$bins) change
+  # 2. Its output type is a plot
+  output$distPlot <- renderPlot({
+
+    x    <- faithful$waiting
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    hist(x, breaks = bins, col = "#75AADB", border = "white",
+         xlab = "Waiting time to next eruption (in mins)",
+         main = "Histogram of waiting times")
+
+    })
+
+}
+)
+
+```
+ 
+ Or with our own data.
+ 
+```{r}
+
+shinyApp(
+  ui <- fluidPage(
+
+  # App title ----
+  titlePanel("Own data programm"),
+
+  # Sidebar layout with input and output definitions ----
+  sidebarLayout(
+
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+
+      # Input: Slider for the number of bins ----
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30)
+
+    ),
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      # Output: Histogram ----
+      plotOutput(outputId = "distPlot")
+
+    )
+  )
+),
+server <- function(input, output) {
+
+  # Plot for temperature over time ----
+  # with requested number of bins
+  # 
+  #
+  # 1. It is "reactive" and therefore should be automatically
+  #    re-executed when inputs (input$bins) change
+  # 2. Its output type is a plot
+  output$distPlot <- renderPlot({
+
+    x    <- forecast$temp
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+  
+
+    })
+
+}
+)
+```
+ 
