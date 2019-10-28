@@ -1,13 +1,16 @@
 ---
-title: "Projekt"
-output: html_document
+title: "Presentation of Shiny"
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Presentation of Shiny
+# Setup Shiny
+
 ## Shiny generals
 
 - Shiny is an R package that makes it easy to build interactive web applications (apps) straight from R.
@@ -43,11 +46,11 @@ library(owmr)
  There are two ways to setup your API.
  
 ```{r}
-#1.  owmr_settings("9b199d86f5f274e32dc5ad67d98045cc")
+#1.  owmr_settings("Your API Key")
 
 #2. store it in an environment variable called OWM_API_KEY (recommended)
 
-Sys.setenv(OWM_API_KEY = "9b199d86f5f274e32dc5ad67d98045cc") # if not set globally
+#Sys.setenv(OWM_API_KEY = "Your API Key") # if not set globally
 ```
 
 ### Download some data
@@ -72,6 +75,12 @@ forecast <- get_forecast("Kiel", units = "metric") %>%
   owmr_as_tibble()
 
 ```
+### Save the Data
+
+```{r}
+#write_rds(forecast, "my_forecast.Rds")
+my_forecast <- read_rds("my_forecast.Rds")
+```
 
 
 ## Analyse the data
@@ -88,7 +97,18 @@ str(forecast)
 
 ```
  Because we have only one row in the current_weather tibble we choose the forecast tibble.
- 
+
+### Preparing the data
+
+Because the timestamp is saved as a character we cant use it well. So we could use the Lubridate package to convert the character timestamp to a datetime.
+
+```{r}
+#install.packages("lubridate")
+library(lubridate)
+my_forecast$dt_txt <- ymd_hms(my_forecast$dt_txt)
+
+```
+
 ### How many hours we have?
  
  We should view the data with some funktions to see how many hours and how many rows and attributes of forecast we got.
@@ -101,7 +121,7 @@ str(forecast)
 
  
 ```{r}
-ggplot(forecast) +
+ggplot(my_forecast) +
   geom_point(aes(dt_txt, temp))
 ```
  
@@ -134,7 +154,7 @@ Because we are here in a markdown file we have to use some other stuff called in
 
 ```
 
-### Now we have to fill the app with data.
+### Some simple app with a slider input
 
 ```{r}
 
@@ -151,7 +171,7 @@ shinyApp(
 
   server = function(input, output) {
     output$hist <- renderPlot({
-      title <- "Temperaturverlauf"
+      title <- "Normalverteilung"
       hist(rnorm(input$num), main = title)
     })
   },
@@ -161,8 +181,7 @@ shinyApp(
 
 ```
 
-Or something like that.
-
+### Interaktive histogram 
 
 ```{r}
 
@@ -223,7 +242,7 @@ server <- function(input, output) {
 
 ```
  
- Or with our own data.
+### Show data in a table
  
 ```{r}
 
@@ -269,7 +288,7 @@ server <- function(input, output) {
   # Return the requested dataset ----
   datasetInput <- reactive({
     switch(input$dataset,
-           "forecast" = forecast)
+           "forecast" = my_forecast)
   })
 
   # Generate a summary of the dataset ----
@@ -288,7 +307,7 @@ server <- function(input, output) {
 
 ```
 
-Or with some plots of our data.
+### Some interactive plot with our dataset
 
 ```{r}
 
@@ -302,7 +321,7 @@ shinyApp(
       sidebarPanel(
         selectInput(inputId = "variable",
                     label = "Was möchten sie sehen?",
-                    choices = colnames(forecast) 
+                    choices = colnames(my_forecast) 
                     )
       ),
       mainPanel(
@@ -316,39 +335,39 @@ shinyApp(
     
     variableInput <- reactive({
       switch(input$variable,
-             "temp" = forecast$temp,
-             "pressure" = forecast$pressure,
-             "humidity" = forecast$humidity,
-             "temp_min" = forecast$temp_min,
-             "temp_max" = forecast$temp_max,
-             "weather_id" = forecast$weather_id,
-             "weather_main" = forecast$weather_main,
-             "weather_description" = forecast$weather_description,
-             "weather_icon" = forecast$weather_icon,
-             "wind_speed" = forecast$wind_speed,
-             "wind_deg" = forecast$wind_deg,
-             "clouds_all" = forecast$clouds_all,
-             "dt" = forecast$dt,
-             "sea_level" = forecast$sea_level,
-             "grnd_level" = forecast$grnd_level,
-             "temp_kf" = forecast$temp_kf,
-             "rain_3h" = forecast$rain_3h,
-             "sys_pod" = forecast$sys_pod,
-             "dt_txt" = forecast$dt_txt
+             "temp" = my_forecast$temp,
+             "pressure" = my_forecast$pressure,
+             "humidity" = my_forecast$humidity,
+             "temp_min" = my_forecast$temp_min,
+             "temp_max" = my_forecast$temp_max,
+             "weather_id" = my_forecast$weather_id,
+             "weather_main" = my_forecast$weather_main,
+             "weather_description" = my_forecast$weather_description,
+             "weather_icon" = my_forecast$weather_icon,
+             "wind_speed" = my_forecast$wind_speed,
+             "wind_deg" = my_forecast$wind_deg,
+             "clouds_all" = my_forecast$clouds_all,
+             "dt" = my_forecast$dt,
+             "sea_level" = my_forecast$sea_level,
+             "grnd_level" = my_forecast$grnd_level,
+             "temp_kf" = my_forecast$temp_kf,
+             "rain_3h" = my_forecast$rain_3h,
+             "sys_pod" = my_forecast$sys_pod,
+             "dt_txt" = my_forecast$dt_txt
              )
     })
     tableInput <- reactive({
-      df <- forecast %>%
+      df <- my_forecast %>%
         group_by(weather_main)
         
         
     })
     output$dia <- renderPlot({
-      ggplot(forecast, aes(x = dt_txt, y = variableInput()))+
+      ggplot(my_forecast, aes(x = dt_txt, y = variableInput()))+
         geom_point() 
     })
     output$table <- renderTable({
-      forecast
+      my_forecast
     })
   }
   
