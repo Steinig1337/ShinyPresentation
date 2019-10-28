@@ -53,7 +53,7 @@ library(owmr)
 #Sys.setenv(OWM_API_KEY = "Your API Key") # if not set globally
 ```
 
-### Download some data
+## Download some data
 
 - With the get_current function we will get a tibble with current weather data 
 - from the city 
@@ -75,7 +75,7 @@ forecast <- get_forecast("Kiel", units = "metric") %>%
   owmr_as_tibble()
 
 ```
-### Save the Data
+## Save the Data
 
 ```{r}
 #write_rds(forecast, "my_forecast.Rds")
@@ -83,9 +83,9 @@ my_forecast <- read_rds("my_forecast.Rds")
 ```
 
 
-## Analyse the data
+# Analyse the data
 
-### View the data
+## View the data
 
  
 ```{r echo=TRUE}
@@ -98,7 +98,7 @@ str(forecast)
 ```
  Because we have only one row in the current_weather tibble we choose the forecast tibble.
 
-### Preparing the data
+## Preparing the data
 
 Because the timestamp is saved as a character we cant use it well. So we could use the Lubridate package to convert the character timestamp to a datetime.
 
@@ -109,7 +109,7 @@ my_forecast$dt_txt <- ymd_hms(my_forecast$dt_txt)
 
 ```
 
-### How many hours we have?
+## How many hours we have?
  
  We should view the data with some funktions to see how many hours and how many rows and attributes of forecast we got.
  
@@ -117,7 +117,7 @@ my_forecast$dt_txt <- ymd_hms(my_forecast$dt_txt)
  - 19 variables
  
  
-### Lets plot some graphics
+## Lets plot some graphics
 
  
 ```{r}
@@ -127,9 +127,9 @@ ggplot(my_forecast) +
  
  We should try a shiny app.
  
-## Do some Shiny stuff
+# Do some Shiny stuff
 
-### Therefore we need a app template
+## Therefore we need a app template
 
 If you type in shinyApp as Snippet than you will get this shiny app template. Use this template in a r.script.
 
@@ -154,7 +154,7 @@ Because we are here in a markdown file we have to use some other stuff called in
 
 ```
 
-### Some simple app with a slider input
+## Some simple app with a slider input
 
 ```{r}
 
@@ -181,7 +181,7 @@ shinyApp(
 
 ```
 
-### Interaktive histogram 
+## Interaktive histogram 
 
 ```{r}
 
@@ -242,7 +242,7 @@ server <- function(input, output) {
 
 ```
  
-### Show data in a table
+## Show data in a table
  
 ```{r}
 
@@ -307,7 +307,7 @@ server <- function(input, output) {
 
 ```
 
-### Some interactive plot with our dataset
+## Some interactive plot with our dataset
 
 ```{r}
 
@@ -381,3 +381,8 @@ shinyApp(
 
 ```
 
+# Source
+
+1. (https://shiny.rstudio.com/)
+2. (https://shiny.rstudio.com/images/shiny-cheatsheet.pdf)
+3. (https://shiny.rstudio.com/tutorial/)
