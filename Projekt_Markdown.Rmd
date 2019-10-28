@@ -386,3 +386,5 @@ shinyApp(
 1. (https://shiny.rstudio.com/)
 2. (https://shiny.rstudio.com/images/shiny-cheatsheet.pdf)
 3. (https://shiny.rstudio.com/tutorial/)
+4. (https://crazycapivara.github.io/owmr/)
+
