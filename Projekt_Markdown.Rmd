@@ -1,23 +1,211 @@
 ---
 title: "Presentation of Shiny"
-output: html_document
+output: ioslides_presentation
 runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Shiny
 
-# Setup Shiny
-
-## Shiny generals
+## Whats Shiny?
 
 - Shiny is an R package that makes it easy to build interactive web applications (apps) straight from R.
 - Shiny applications will run on a server. 
 - They will hosted right on your computer over an integrated service. 
 - With this apps you can create interactive web applications for data visialization.
+- With this apps you can create interactive markdown files for visualization
+
+
+## App template for r.scripts
+
+If you type in shinyApp as Snippet than you will get this shiny app template. Use this template in a r.script.
+
+```{r}
+#ui <- fluidPage()
+
+#server <- function(input, output, session) {}
+
+#shinyApp(ui, server)
+```
+
+## App template for r.markdown
+
+Because we are here in a markdown file we have to use some other stuff called inline applications
+
+```{r}
+#shinyApp(  
+#  ui = fluidPage(  ),
+
+#  server = function(input, output) {  },
+
+#  options = list(height = 500)
+#)
+
+```
+
+# There are two meaningful parts of a shiny app
+
+## ui = fluidPage ()
+
+- This is the front-end of the application
+- You can strukture the visual input/output
+- You can enter input variables through widgets
+- You declare what kind of output you want
+
+## server = function(input, output) {}
+
+- This is the back-end of the application
+- Here you run your reactive functions
+- a function with instructions on how  to build and rebuild the R objects displayed in the UI
+
+## Do some front-end stuff
+
+```{r}
+#ui <- fluidPage(
+  #App title
+  #titlePanel("For the title"),
+  #sidebarLayout(
+    #sidebarPanel(
+      #sliderInput(inputId = "bins",
+                  #label = "Number of Bins:",
+                  #min = 1,
+                  #max = 50,
+                  #value = 30)
+    #),
+    #mainPanel(
+      #plotOutput(outputId = "distPlot")
+    #)
+  #)
+#)
+
+```
+
+## Looks like that
+
+```{r echo=FALSE}
+shinyApp(
+  ui <- fluidPage(
+
+  # App title ----
+  titlePanel("Hello Shiny!"),
+
+  # Sidebar layout with input and output definitions ----
+  sidebarLayout(
+
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+
+      # Input: Slider for the number of bins ----
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30)
+
+    ),
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      # Output: Histogram ----
+      plotOutput(outputId = "distPlot")
+
+    )
+  )
+),
+server <- function(input, output) {}
+)
+```
+
+## Diferent input widgets
+
+![](Bilder/inputwidgets1.png) ![](Bilder/inputwidgets2.png)
+
+## Do some back-end stuff
+
+```{r}
+#server <- function(input, output) {
+
+  # 1. It is "reactive" and therefore should be automatically
+  #    re-executed when inputs (input$bins) change
+  # 2. Its output type is a plot
+  #output$distPlot <- renderPlot({
+
+    #x    <- faithful$waiting
+    #bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    #hist(x, breaks = bins, col = "#75AADB", border = "white",
+         #xlab = "Waiting time to next eruption (in mins)",
+         #main = "Histogram of waiting times")
+
+    #})
+
+#}
+```
+
+## Merge it together
+
+```{r echo=FALSE}
+shinyApp(
+  ui <- fluidPage(
+
+  # App title ----
+  titlePanel("Hello Shiny!"),
+
+  # Sidebar layout with input and output definitions ----
+  sidebarLayout(
+
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+
+      # Input: Slider for the number of bins ----
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30)
+
+    ),
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      # Output: Histogram ----
+      plotOutput(outputId = "distPlot")
+
+    )
+  )
+),
+server <- function(input, output) {
+  output$distPlot <- renderPlot({
+
+    x    <- faithful$waiting
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    hist(x, breaks = bins, col = "#75AADB", border = "white",
+         xlab = "Waiting time to next eruption (in mins)",
+         main = "Histogram of waiting times")
+
+    })
+
+}
+)
+```
+
+## Different types of output functions
+
+![](Bilder/OutputFunctions.png)
+
+## Reactivity
+
+![](Bilder/reactivity.png)
+
+# Setup Shiny for our usage
 
 ## requirements
+
 - tidyverse
 - shiny
 - shinythemes
@@ -25,15 +213,22 @@ knitr::opts_chunk$set(echo = TRUE)
 - Account for API (in this case: https://openweathermap.org/api)
 - Set up your API
 
-### Install OWMR and shiny
+## Install packages
 
 ```{r}
+#install.packages("tidyverse")
 #install.packages("owmr")
 #install.packages("shiny")
 #install.packages("shinythemes")
 ```
 
-### Run library
+## Run library
+
+- library(tidyverse)
+- library(shiny)
+- library(shinythemes)
+- library(owmr)
+
 ```{r include=FALSE}
 library(tidyverse)
 library(shiny)
@@ -41,8 +236,12 @@ library(shinythemes)
 library(owmr)
 ```
 
-### Set up your api key
+## Set up your api key
+
  There are two ways to setup your API.
+ 
+ 1. For one session usage
+ 2. Store your key for multiple session usage
  
 ```{r}
 #1.  owmr_settings("Your API Key")
@@ -70,19 +269,19 @@ library(owmr)
 
 ```{r}
 
-#forecast <- get_forecast("Kiel", units = "metric") %>%
+#my_forecast <- get_forecast("Kiel", units = "metric") %>%
 #  owmr_as_tibble()
 
 ```
 ## Save the Data
 
 ```{r}
-#write_rds(forecast, "my_forecast.Rds")
+#write_rds(my_forecast, "my_forecast.Rds")
 my_forecast <- read_rds("my_forecast.Rds")
 ```
 
 
-# Analyse the data
+# Analyse our data
 
 ## View the data
 
@@ -124,261 +323,8 @@ ggplot(my_forecast) +
   geom_point(aes(dt_txt, temp))
 ```
  
- We should try a shiny app.
  
-# Do some Shiny stuff
 
-## Therefore we need a app template
-
-If you type in shinyApp as Snippet than you will get this shiny app template. Use this template in a r.script.
-
-```{r, include=FALSE}
-#ui <- fluidPage()
-
-#server <- function(input, output, session) {}
-
-#shinyApp(ui, server)
-```
-
-Because we are here in a markdown file we have to use some other stuff called inline applications
-
-```{r, echo=FALSE}
-#shinyApp(  
-#  ui = fluidPage(  ),
-
-#  server = function(input, output) {  },
-
-#  options = list(height = 500)
-#)
-
-```
-
-## Some simple app with a slider input
-
-```{r}
-
-shinyApp(
-  ui = fluidPage(
-        sliderInput(inputId = "num",
-                label = "Choose a number",
-                value = 50, min = 1, max = 100),
-        plotOutput("hist")
-    
-   ),
-  
-    
-
-  server = function(input, output) {
-    output$hist <- renderPlot({
-      title <- "Normalverteilung"
-      hist(rnorm(input$num), main = title)
-    })
-  },
-
-  options = list(height = 500)
-)
-
-```
-
-## Interaktive histogram 
-
-```{r}
-
-shinyApp(
-  ui <- fluidPage(
-
-  # App title ----
-  titlePanel("First app!"),
-
-  # Sidebar layout with input and output definitions ----
-  sidebarLayout(
-
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Slider for the number of bins ----
-      sliderInput(inputId = "bins",
-                  label = "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30)
-
-    ),
-
-    # Main panel for displaying outputs ----
-    mainPanel(
-
-      # Output: Histogram ----
-      plotOutput(outputId = "distPlot")
-
-    )
-  )
-),
-server <- function(input, output) {
-
-  # Histogram of the Old Faithful Geyser Data ----
-  # with requested number of bins
-  # This expression that generates a histogram is wrapped in a call
-  # to renderPlot to indicate that:
-  #
-  # 1. It is "reactive" and therefore should be automatically
-  #    re-executed when inputs (input$bins) change
-  # 2. Its output type is a plot
-  output$distPlot <- renderPlot({
-
-    x    <- faithful$waiting
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-    hist(x, breaks = bins, col = "#75AADB", border = "white",
-         xlab = "Waiting time to next eruption (in mins)",
-         main = "Histogram of waiting times")
-
-    })
-
-}
-)
-
-
-```
- 
-## Show data in a table
- 
-```{r}
-
-shinyApp(
- ui <- fluidPage(
-
-  # App title ----
-  titlePanel("Shiny Text"),
-
-  # Sidebar layout with a input and output definitions ----
-  sidebarLayout(
-
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Selector for choosing dataset ----
-      selectInput(inputId = "dataset",
-                  label = "Choose a dataset:",
-                  choices = c("forecast")),
-
-      # Input: Numeric entry for number of obs to view ----
-      numericInput(inputId = "obs",
-                   label = "Number of observations to view:",
-                   value = 10)
-    ),
-
-    # Main panel for displaying outputs ----
-    mainPanel(
-
-      # Output: Verbatim text for data summary ----
-      verbatimTextOutput("summary"),
-
-      # Output: HTML table with requested number of observations ----
-      tableOutput("view")
-
-    )
-  )
-),
-
-# Define server logic to summarize and view selected dataset ----
-server <- function(input, output) {
-
-  # Return the requested dataset ----
-  datasetInput <- reactive({
-    switch(input$dataset,
-           "forecast" = my_forecast)
-  })
-
-  # Generate a summary of the dataset ----
-  output$summary <- renderPrint({
-    dataset <- datasetInput()
-    summary(dataset)
-  })
-
-  # Show the first "n" observations ----
-  output$view <- renderTable({
-    head(datasetInput(), n = input$obs)
-  })
-
-}
-)
-
-```
-
-## Some interactive plot with our dataset
-
-```{r}
-
-shinyApp(
-  ui <- fluidPage(
-    #App title
-    titlePanel("Test App"),
-    
-    #Sidebar Layout
-    sidebarLayout(
-      sidebarPanel(
-        selectInput(inputId = "variable",
-                    label = "Was möchten sie sehen?",
-                    choices = colnames(my_forecast) 
-                    )
-      ),
-      mainPanel(
-        plotOutput(outputId = "dia"),
-        tableOutput(outputId = "table")
-      )
-        
-      )
-    ),
-  server <- function(input, output){
-    
-    variableInput <- reactive({
-      switch(input$variable,
-             "temp" = my_forecast$temp,
-             "pressure" = my_forecast$pressure,
-             "humidity" = my_forecast$humidity,
-             "temp_min" = my_forecast$temp_min,
-             "temp_max" = my_forecast$temp_max,
-             "weather_id" = my_forecast$weather_id,
-             "weather_main" = my_forecast$weather_main,
-             "weather_description" = my_forecast$weather_description,
-             "weather_icon" = my_forecast$weather_icon,
-             "wind_speed" = my_forecast$wind_speed,
-             "wind_deg" = my_forecast$wind_deg,
-             "clouds_all" = my_forecast$clouds_all,
-             "dt" = my_forecast$dt,
-             "sea_level" = my_forecast$sea_level,
-             "grnd_level" = my_forecast$grnd_level,
-             "temp_kf" = my_forecast$temp_kf,
-             "rain_3h" = my_forecast$rain_3h,
-             "sys_pod" = my_forecast$sys_pod,
-             "dt_txt" = my_forecast$dt_txt
-             )
-    })
-    tableInput <- reactive({
-      df <- my_forecast %>%
-        group_by(weather_main)
-        
-        
-    })
-    output$dia <- renderPlot({
-      ggplot(my_forecast, aes(x = dt_txt, y = variableInput()))+
-        geom_point() 
-    })
-    output$table <- renderTable({
-      my_forecast
-    })
-  }
-  
-)
-
-
-
-```
- 
-```{r}
-
-```
 
 # Source
 
