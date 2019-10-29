@@ -7,6 +7,14 @@ runtime: shiny
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r include=FALSE}
+library(tidyverse)
+library(shiny)
+library(shinythemes)
+library(owmr)
+```
+
 # Shiny
 
 ## Whats Shiny?
@@ -229,12 +237,7 @@ server <- function(input, output) {
 - library(shinythemes)
 - library(owmr)
 
-```{r include=FALSE}
-library(tidyverse)
-library(shiny)
-library(shinythemes)
-library(owmr)
-```
+
 
 ## Set up your api key
 
@@ -248,7 +251,7 @@ library(owmr)
 
 #2. store it in an environment variable called OWM_API_KEY (recommended)
 
-#Sys.setenv(OWM_API_KEY = "Your API Key") # if not set globally
+#Sys.setenv(OWM_API_KEY = "Your API key") # if not set globally
 ```
 
 ## Download some data
@@ -269,15 +272,15 @@ library(owmr)
 
 ```{r}
 
-#my_forecast <- get_forecast("Kiel", units = "metric") %>%
-#  owmr_as_tibble()
+my_forecast <- get_forecast("Kiel", units = "metric") %>%
+  owmr_as_tibble()
 
 ```
-## Save the Data
+## Save the data or read 
 
 ```{r}
-#write_rds(my_forecast, "my_forecast.Rds")
-my_forecast <- read_rds("my_forecast.Rds")
+write_rds(my_forecast, "my_forecast.Rds")
+#my_forecast <- read_rds("my_forecast.Rds")
 ```
 
 
@@ -289,8 +292,7 @@ my_forecast <- read_rds("my_forecast.Rds")
 ```{r echo=TRUE}
 #View(current_weather)
 #View(forecast)
-
-class(my_forecast)
+#class(my_forecast)
 str(my_forecast)
 
 ```
@@ -304,15 +306,9 @@ Because the timestamp is saved as a character we cant use it well. So we could u
 #install.packages("lubridate")
 library(lubridate)
 my_forecast$dt_txt <- ymd_hms(my_forecast$dt_txt)
-
+write_rds(my_forecast, "my_forecast.Rds")
 ```
 
-## How many hours we have?
- 
- We should view the data with some funktions to see how many hours and how many rows and attributes of forecast we got.
- 
- - 40 rows of data. So we got 39*3h= 117h = 4.875 d of time in 40 rows.
- - 19 variables
  
  
 ## Lets plot some graphics
@@ -326,10 +322,10 @@ ggplot(my_forecast) +
  
 
 
-# Source
+## Source
 
 1. (https://shiny.rstudio.com/)
 2. (https://shiny.rstudio.com/images/shiny-cheatsheet.pdf)
 3. (https://shiny.rstudio.com/tutorial/)
 4. (https://crazycapivara.github.io/owmr/)
-
+5. (https://shiny.rstudio.com/gallery/)
