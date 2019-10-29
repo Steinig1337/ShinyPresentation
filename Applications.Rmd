@@ -1,0 +1,281 @@
+---
+title: "Applications"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Examples
+
+## Inputs and Outputs
+
+You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change.  This demonstrates how a standard R plot can be made interactive by wrapping it in the Shiny `renderPlot` function. The `selectInput` and `sliderInput` functions create the input widgets used to drive the plot.
+
+```{r eruptions, echo=FALSE}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)", main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
+## Embedded Application
+
+It's also possible to embed an entire Shiny application within an R Markdown document using the `shinyAppDir` function. This example embeds a Shiny application located in another directory:
+
+```{r tabsets, echo=FALSE}
+shinyAppDir(
+  system.file("examples/06_tabsets", package = "shiny"),
+  options = list(
+    width = "100%", height = 550
+  )
+)
+```
+
+Note the use of the `height` parameter to determine how much vertical space the embedded application should occupy.
+
+You can also use the `shinyApp` function to define an application inline rather then in an external directory.
+
+In all of R code chunks above the `echo = FALSE` attribute is used. This is to prevent the R code within the chunk from rendering in the document alongside the Shiny components.
+
+## Some simple app with a slider input
+
+```{r}
+
+shinyApp(
+  ui = fluidPage(
+        sliderInput(inputId = "num",
+                label = "Choose a number",
+                value = 50, min = 1, max = 100),
+        plotOutput("hist")
+    
+   ),
+  
+    
+
+  server = function(input, output) {
+    output$hist <- renderPlot({
+      title <- "Normalverteilung"
+      hist(rnorm(input$num), main = title)
+    })
+  },
+
+  options = list(height = 500)
+)
+
+```
+
+## Interaktive histogram 
+
+```{r}
+
+shinyApp(
+  ui <- fluidPage(
+
+  # App title ----
+  titlePanel("First app!"),
+
+  # Sidebar layout with input and output definitions ----
+  sidebarLayout(
+
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+
+      # Input: Slider for the number of bins ----
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30)
+
+    ),
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      # Output: Histogram ----
+      plotOutput(outputId = "distPlot")
+
+    )
+  )
+),
+server <- function(input, output) {
+
+  # Histogram of the Old Faithful Geyser Data ----
+  # with requested number of bins
+  # This expression that generates a histogram is wrapped in a call
+  # to renderPlot to indicate that:
+  #
+  # 1. It is "reactive" and therefore should be automatically
+  #    re-executed when inputs (input$bins) change
+  # 2. Its output type is a plot
+  output$distPlot <- renderPlot({
+
+    x    <- faithful$waiting
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    hist(x, breaks = bins, col = "#75AADB", border = "white",
+         xlab = "Waiting time to next eruption (in mins)",
+         main = "Histogram of waiting times")
+
+    })
+
+}
+)
+
+
+```
+
+## Show data in a table
+
+
+ 
+```{r}
+library(tidyverse)
+
+my_forecast <- readRDS("my_forecast.Rds")
+
+shinyApp(
+ ui <- fluidPage(
+
+  # App title ----
+  titlePanel("Shiny Text"),
+
+  # Sidebar layout with a input and output definitions ----
+  sidebarLayout(
+
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+
+      # Input: Selector for choosing dataset ----
+      selectInput(inputId = "dataset",
+                  label = "Choose a dataset:",
+                  choices = c("forecast", "rock")),
+
+      # Input: Numeric entry for number of obs to view ----
+      numericInput(inputId = "obs",
+                   label = "Number of observations to view:",
+                   value = 10)
+    ),
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      # Output: Verbatim text for data summary ----
+      verbatimTextOutput("summary"),
+
+      # Output: HTML table with requested number of observations ----
+      tableOutput("view")
+
+    )
+  )
+),
+
+# Define server logic to summarize and view selected dataset ----
+server <- function(input, output) {
+
+  # Return the requested dataset ----
+  datasetInput <- reactive({
+    switch(input$dataset,
+           "forecast" = my_forecast,
+           "rock" = rock)
+  })
+
+  # Generate a summary of the dataset ----
+  output$summary <- renderPrint({
+    dataset <- datasetInput()
+    summary(dataset)
+  })
+
+  # Show the first "n" observations ----
+  output$view <- renderTable({
+    head(datasetInput(), n = input$obs)
+  })
+
+}
+)
+
+```
+
+## Some interactive plot with our dataset
+
+```{r}
+
+shinyApp(
+  ui <- fluidPage(
+    #App title
+    titlePanel("Test App"),
+    
+    #Sidebar Layout
+    sidebarLayout(
+      sidebarPanel(
+        selectInput(inputId = "variable",
+                    label = "Was möchten sie sehen?",
+                    choices = colnames(my_forecast) 
+                    )
+      ),
+      mainPanel(
+        plotOutput(outputId = "dia"),
+        tableOutput(outputId = "table")
+      )
+        
+      )
+    ),
+  server <- function(input, output){
+    
+    variableInput <- reactive({
+      switch(input$variable,
+             "temp" = my_forecast$temp,
+             "pressure" = my_forecast$pressure,
+             "humidity" = my_forecast$humidity,
+             "temp_min" = my_forecast$temp_min,
+             "temp_max" = my_forecast$temp_max,
+             "weather_id" = my_forecast$weather_id,
+             "weather_main" = my_forecast$weather_main,
+             "weather_description" = my_forecast$weather_description,
+             "weather_icon" = my_forecast$weather_icon,
+             "wind_speed" = my_forecast$wind_speed,
+             "wind_deg" = my_forecast$wind_deg,
+             "clouds_all" = my_forecast$clouds_all,
+             "dt" = my_forecast$dt,
+             "sea_level" = my_forecast$sea_level,
+             "grnd_level" = my_forecast$grnd_level,
+             "temp_kf" = my_forecast$temp_kf,
+             "rain_3h" = my_forecast$rain_3h,
+             "sys_pod" = my_forecast$sys_pod,
+             "dt_txt" = my_forecast$dt_txt
+             )
+    })
+    tableInput <- reactive({
+      df <- my_forecast %>%
+        group_by(weather_main)
+        
+        
+    })
+    output$dia <- renderPlot({
+      ggplot(my_forecast, aes(x = dt_txt, y = variableInput()))+
+        geom_point() 
+    })
+    output$table <- renderTable({
+      my_forecast
+    })
+  }
+  
+)
+
+
+
+```
