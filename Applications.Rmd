@@ -8,6 +8,13 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r include=FALSE}
+library(tidyverse)
+library(shiny)
+library(shinythemes)
+library(DT)
+```
+
 # Examples
 
 ## Inputs and Outputs
@@ -133,7 +140,8 @@ server <- function(input, output) {
 
     })
 
-}
+},
+options = list(height = 500)
 )
 
 
@@ -144,7 +152,7 @@ server <- function(input, output) {
 
  
 ```{r}
-library(tidyverse)
+
 
 my_forecast <- readRDS("my_forecast.Rds")
 
@@ -205,7 +213,8 @@ server <- function(input, output) {
     head(datasetInput(), n = input$obs)
   })
 
-}
+},
+options = list(height = 1000)
 )
 
 ```
@@ -222,18 +231,31 @@ shinyApp(
     #Sidebar Layout
     sidebarLayout(
       sidebarPanel(
+        
         selectInput(inputId = "variable",
-                    label = "Was möchten sie sehen?",
-                    choices = colnames(my_forecast) 
-                    )
-      ),
+                    label = "Was möchten sie auf der x-achse sehen?",
+                    choices = colnames(my_forecast),
+                    selected = "temp"),
+        
+        selectInput(inputId = "variable2",
+                    label = "Was möchten sie auf der z-achse sehen?",
+                    choices = colnames(my_forecast),
+                    selected = "pressure"),
+        
+        selectInput(inputId = "variable3",
+                    label = "Choose the visualization",
+                    choices = c("colour" = "colour", "size" = "size"),
+                    selected = "color"),
+        
+        checkboxGroupInput("show_vars", "Columns in my_forecast to show:",
+                           names(my_forecast), selected = "temp")
+        ),
       mainPanel(
         plotOutput(outputId = "dia"),
-        tableOutput(outputId = "table")
+        DT::dataTableOutput(outputId = "table")
       )
-        
-      )
-    ),
+    )  
+  ),
   server <- function(input, output){
     
     variableInput <- reactive({
@@ -259,20 +281,51 @@ shinyApp(
              "dt_txt" = my_forecast$dt_txt
              )
     })
-    tableInput <- reactive({
-      df <- my_forecast %>%
-        group_by(weather_main)
-        
-        
+    variableInput2 <- reactive({
+      switch(input$variable2,
+             "temp" = my_forecast$temp,
+             "pressure" = my_forecast$pressure,
+             "humidity" = my_forecast$humidity,
+             "temp_min" = my_forecast$temp_min,
+             "temp_max" = my_forecast$temp_max,
+             "weather_id" = my_forecast$weather_id,
+             "weather_main" = my_forecast$weather_main,
+             "weather_description" = my_forecast$weather_description,
+             "weather_icon" = my_forecast$weather_icon,
+             "wind_speed" = my_forecast$wind_speed,
+             "wind_deg" = my_forecast$wind_deg,
+             "clouds_all" = my_forecast$clouds_all,
+             "dt" = my_forecast$dt,
+             "sea_level" = my_forecast$sea_level,
+             "grnd_level" = my_forecast$grnd_level,
+             "temp_kf" = my_forecast$temp_kf,
+             "rain_3h" = my_forecast$rain_3h,
+             "sys_pod" = my_forecast$sys_pod,
+             "dt_txt" = my_forecast$dt_txt
+             )
     })
+    
+    variableInput3 <- reactive({
+      switch(input$variable3,
+             "colour" = colour,
+             "size" = size
+             )
+    })
+   
+        
+        
+   
     output$dia <- renderPlot({
       ggplot(my_forecast, aes(x = dt_txt, y = variableInput()))+
-        geom_point() 
+        geom_point(aes(size = variableInput2())) 
     })
-    output$table <- renderTable({
-      my_forecast
+    
+    output$table <- renderDataTable({
+    DT::datatable(my_forecast[, input$show_vars, drop = FALSE])
     })
-  }
+    
+  },
+options = list(height = 1000)
   
 )
 
