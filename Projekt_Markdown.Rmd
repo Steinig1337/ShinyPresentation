@@ -1,8 +1,7 @@
 ---
 title: "Presentation of Shiny"
-output:
-  html_document:
-    df_print: paged
+output: html_document
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -61,8 +60,8 @@ library(owmr)
 
 ```{r}
 
-(current_weather <- get_current("Kiel", units = "metric") %>%
-  owmr_as_tibble()) %>% names()
+#(current_weather <- get_current("Kiel", units = "metric") %>%
+#  owmr_as_tibble()) %>% names()
 
 ```
 
@@ -71,8 +70,8 @@ library(owmr)
 
 ```{r}
 
-forecast <- get_forecast("Kiel", units = "metric") %>%
-  owmr_as_tibble()
+#forecast <- get_forecast("Kiel", units = "metric") %>%
+#  owmr_as_tibble()
 
 ```
 ## Save the Data
@@ -92,8 +91,8 @@ my_forecast <- read_rds("my_forecast.Rds")
 #View(current_weather)
 #View(forecast)
 
-class(forecast)
-str(forecast)
+class(my_forecast)
+str(my_forecast)
 
 ```
  Because we have only one row in the current_weather tibble we choose the forecast tibble.
