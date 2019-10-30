@@ -42,14 +42,14 @@ shinyApp(ui, server)
 
 Because we are here in a markdown file we have to use some other stuff called inline applications
 
-```{r}
-#shinyApp(  
-#  ui = fluidPage(  ),
+```{r eval=FALSE}
+shinyApp(  
+  ui = fluidPage(  ),
 
-#  server = function(input, output) {  },
+  server = function(input, output) {  },
 
-#  options = list(height = 500)
-#)
+  options = list(height = 500)
+)
 
 ```
 
@@ -70,23 +70,23 @@ Because we are here in a markdown file we have to use some other stuff called in
 
 ## Do some front-end stuff
 
-```{r}
-#ui <- fluidPage(
+```{r, eval=FALSE}
+ui <- fluidPage(
   #App title
-  #titlePanel("For the title"),
-  #sidebarLayout(
-    #sidebarPanel(
-      #sliderInput(inputId = "bins",
-                  #label = "Number of Bins:",
-                  #min = 1,
-                  #max = 50,
-                  #value = 30)
-    #),
-    #mainPanel(
-      #plotOutput(outputId = "distPlot")
-    #)
-  #)
-#)
+  titlePanel("For the title"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputId = "bins",
+                  label = "Number of Bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30)
+    ),
+    mainPanel(
+      plotOutput(outputId = "distPlot")
+    )
+  )
+)
 
 ```
 
@@ -133,24 +133,24 @@ server <- function(input, output) {}
 
 ## Do some back-end stuff
 
-```{r}
-#server <- function(input, output) {
+```{r, eval=FALSE}
+server <- function(input, output) {
 
   # 1. It is "reactive" and therefore should be automatically
   #    re-executed when inputs (input$bins) change
   # 2. Its output type is a plot
-  #output$distPlot <- renderPlot({
+  output$distPlot <- renderPlot({
 
-    #x    <- faithful$waiting
-    #bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    x    <- faithful$waiting
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
 
-    #hist(x, breaks = bins, col = "#75AADB", border = "white",
+    hist(x, breaks = bins, col = "#75AADB", border = "white",
          #xlab = "Waiting time to next eruption (in mins)",
          #main = "Histogram of waiting times")
 
-    #})
+    })
 
-#}
+}
 ```
 
 ## Merge it together
@@ -246,12 +246,16 @@ server <- function(input, output) {
  1. For one session usage
  2. Store your key for multiple session usage
  
+ For live data use one of the two API setup commands.
+ 
 ```{r}
-#1.  owmr_settings("Your API Key")
+#1. Use API key for one session
+
+#owmr_settings("Your API Key")
 
 #2. store it in an environment variable called OWM_API_KEY (recommended)
 
-#Sys.setenv(OWM_API_KEY = "9b199d86f5f274e32dc5ad67d98045cc") # if not set globally
+#Sys.setenv(OWM_API_KEY = "Your API key") # if not set globally
 ```
 
 ## Download some data
@@ -276,7 +280,10 @@ server <- function(input, output) {
 #  owmr_as_tibble()
 
 ```
-## Save the data or read 
+## Save the data or read
+
+- Write for live data.
+- read for offline
 
 ```{r}
 #write_rds(my_forecast, "my_forecast.Rds")
