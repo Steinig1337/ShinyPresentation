@@ -147,7 +147,7 @@ options = list(height = 500)
 
 ```
 
-## Show data in a table
+## Show data in a table 
 
 
  
@@ -232,32 +232,34 @@ shinyApp(
     sidebarLayout(
       sidebarPanel(
         
+        #Input Auswahl für y-achse im User Interface
         selectInput(inputId = "variable",
-                    label = "Was möchten sie auf der x-achse sehen?",
+                    label = "Was möchten sie auf der y-achse sehen?",
                     choices = colnames(my_forecast),
                     selected = "temp"),
-        
+        #Input Auswahl für die 3. Eigenschaft
         selectInput(inputId = "variable2",
                     label = "Was möchten sie auf der z-achse sehen?",
                     choices = colnames(my_forecast),
                     selected = "pressure"),
-        
+        # Input Auswahl für die Ploteigenschaften
         selectInput(inputId = "variable3",
                     label = "Choose the visualization",
                     choices = c("colour" = "colour", "size" = "size"),
                     selected = "color"),
-        
+        # Checkbox für den Datatable zum Auswählen der Attribute
         checkboxGroupInput("show_vars", "Columns in my_forecast to show:",
                            names(my_forecast), selected = "temp")
         ),
       mainPanel(
+        # Output Festlegung für das User Interface
         plotOutput(outputId = "dia"),
         DT::dataTableOutput(outputId = "table")
       )
     )  
   ),
   server <- function(input, output){
-    
+    # Variable für die y-Achse wird geswitcht
     variableInput <- reactive({
       switch(input$variable,
              "temp" = my_forecast$temp,
@@ -281,6 +283,7 @@ shinyApp(
              "dt_txt" = my_forecast$dt_txt
              )
     })
+    # Variable für die 3. Eigenschaft
     variableInput2 <- reactive({
       switch(input$variable2,
              "temp" = my_forecast$temp,
@@ -304,7 +307,7 @@ shinyApp(
              "dt_txt" = my_forecast$dt_txt
              )
     })
-    
+    # Versuch die Ploteinstellungen zu switchen
     variableInput3 <- reactive({
       switch(input$variable3,
              "colour" = colour,
@@ -314,12 +317,12 @@ shinyApp(
    
         
         
-   
+   # reaktives Rendern vom Plot
     output$dia <- renderPlot({
       ggplot(my_forecast, aes(x = dt_txt, y = variableInput()))+
         geom_point(aes(size = variableInput2())) 
     })
-    
+    # reaktives anzeigen vom DataTable
     output$table <- renderDataTable({
     DT::datatable(my_forecast[, input$show_vars, drop = FALSE])
     })
