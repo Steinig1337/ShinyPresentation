@@ -30,12 +30,12 @@ library(owmr)
 
 If you type in shinyApp as Snippet than you will get this shiny app template. Use this template in a r.script.
 
-```{r}
-#ui <- fluidPage()
+```{r eval=FALSE}
+ui <- fluidPage()
 
-#server <- function(input, output, session) {}
+server <- function(input, output, session) {}
 
-#shinyApp(ui, server)
+shinyApp(ui, server)
 ```
 
 ## App template for r.markdown
@@ -251,7 +251,7 @@ server <- function(input, output) {
 
 #2. store it in an environment variable called OWM_API_KEY (recommended)
 
-#Sys.setenv(OWM_API_KEY = "Your API key") # if not set globally
+#Sys.setenv(OWM_API_KEY = "9b199d86f5f274e32dc5ad67d98045cc") # if not set globally
 ```
 
 ## Download some data
@@ -272,15 +272,15 @@ server <- function(input, output) {
 
 ```{r}
 
-my_forecast <- get_forecast("Kiel", units = "metric") %>%
-  owmr_as_tibble()
+#my_forecast <- get_forecast("Kiel", units = "metric") %>%
+#  owmr_as_tibble()
 
 ```
 ## Save the data or read 
 
 ```{r}
-write_rds(my_forecast, "my_forecast.Rds")
-#my_forecast <- read_rds("my_forecast.Rds")
+#write_rds(my_forecast, "my_forecast.Rds")
+my_forecast <- read_rds("my_forecast.Rds")
 ```
 
 
